@@ -1,7 +1,8 @@
 import pandas as pd
 import io
 import requests
-
+import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
@@ -103,7 +104,7 @@ def build_model(key, DROP_COLS=None):
                     reg_lambda=2, booster='dart', colsample_bylevel=0.6, colsample_bynode=0.5)
     XGB_scores = cross_validate(XGB_model, X, y, scoring=scoring, cv=GroupKFold(), groups=pageID_group)
     XGB_model.fit(X, y)
-    print(TEMPLATE_NAME)
+    print(key)
     print(XGB_scores)
     model_scores['XGB'] = XGB_scores
     XGB_model.get_booster().feature_names = feature_names
@@ -122,3 +123,13 @@ def model_training():
     results[(template_name, "X")] = X
     results[(template_name, "y")] = y
   return results
+
+def plot_feature_importance(fimp, filename):
+    fimp_df = pd.DataFrame(list(fimp.items()), columns=["Feature", "Importance"])
+    fimp_df.sort_values("Importance", ascending=True, inplace=True)
+    plt.figure(figsize=(25,5))
+    plt.title("Feature importance ")
+    plt.xlabel("importance ")
+    plt.ylabel("features")
+    plt.barh(fimp_df['Feature'], fimp_df['Importance'])
+    plt.savefig(filename)
